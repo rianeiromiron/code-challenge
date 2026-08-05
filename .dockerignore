@@ -1,0 +1,23 @@
+# Binarios locales
+*.exe
+code-challenge-cli
+code-challenge-server
+
+# Git
+.git
+.gitignore
+
+# Documentación
+README.md
+NOTAS.md
+
+# IDE
+.vscode/
+.idea/
+
+# Tests (no necesarios para la imagen de producción)
+*_test.go
+
+# Docker
+Dockerfile
+.dockerignore
