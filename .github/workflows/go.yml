@@ -1,0 +1,32 @@
+name: Go CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Descargar dependencias
+        run: go mod tidy
+
+      - name: Ejecutar tests
+        run: go test -v ./...
+
+      - name: Compilar CLI
+        run: go build -o code-challenge-cli ./cmd/cli
+
+      - name: Compilar Server
+        run: go build -o code-challenge-server ./cmd/server
