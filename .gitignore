@@ -4,6 +4,8 @@
 *.dll
 *.so
 *.dylib
+code-challenge-server.exe
+code-challenge-cli.exe
 
 # Test binaries
 *.test
