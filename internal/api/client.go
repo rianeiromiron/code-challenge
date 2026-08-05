@@ -7,22 +7,45 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/rianeiromiron/code-challenge/internal/models"
 )
 
+// Client permite consultar el clima. Sus URLs son configurables para testing.
+type Client struct {
+	GeocodingBaseURL string
+	WeatherBaseURL   string
+	HTTPClient       *http.Client
+}
+
+// NewClient crea un cliente con las URLs de producción por defecto.
+func NewClient() *Client {
+	return &Client{
+		GeocodingBaseURL: "https://geocoding-api.open-meteo.com/v1/search",
+		WeatherBaseURL:   "https://api.met.no/weatherapi/locationforecast/2.0/compact.json",
+		HTTPClient:       &http.Client{Timeout: 15 * time.Second},
+	}
+}
+
+// ObtenerClima es la función pública que usa el cliente por defecto (producción).
 func ObtenerClima(ctx context.Context, pais string, limit int) (*models.ClimaResponse, error) {
+	return NewClient().ObtenerClima(ctx, pais, limit)
+}
+
+// ObtenerClima del Client hace el trabajo real.
+func (c *Client) ObtenerClima(ctx context.Context, pais string, limit int) (*models.ClimaResponse, error) {
 	query := url.Values{}
 	query.Set("name", pais)
 	query.Set("language", "es")
 
-	apiURL := "https://geocoding-api.open-meteo.com/v1/search?" + query.Encode()
+	apiURL := c.GeocodingBaseURL + "?" + query.Encode()
 	req, err := http.NewRequestWithContext(ctx, "GET", apiURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("error geocoding: %w", err)
 	}
@@ -48,14 +71,14 @@ func ObtenerClima(ctx context.Context, pais string, limit int) (*models.ClimaRes
 	query.Set("lat", fmt.Sprint(lat))
 	query.Set("lon", fmt.Sprint(lon))
 
-	apiURL = "https://api.met.no/weatherapi/locationforecast/2.0/compact.json?" + query.Encode()
+	apiURL = c.WeatherBaseURL + "?" + query.Encode()
 	req, err = http.NewRequestWithContext(ctx, "GET", apiURL, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("User-Agent", "PruebasClima/1.0 rianeiromiron@gmail.com")
 
-	res, err = http.DefaultClient.Do(req)
+	res, err = c.HTTPClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("error API clima: %w", err)
 	}
