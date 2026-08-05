@@ -1,3 +1,3 @@
-module github/rianeiromiron/code-challenge
+module github.com/rianeiromiron/code-challenge
 
 go 1.24.5
